@@ -25,18 +25,22 @@ export async function cognitoIdentityIdProvider({
 	tokens,
 	authConfig,
 	identityIdStore,
+	forceNewIdentityId
 }: {
 	tokens?: AuthTokens;
 	authConfig: CognitoIdentityPoolConfig;
 	identityIdStore: IdentityIdStore;
+	forceNewIdentityId?: boolean
 }): Promise<string> {
 	identityIdStore.setAuthConfig({ Cognito: authConfig });
 
-	// will return null only if there is no identityId cached or if there is an error retrieving it
-	const identityId: Identity | null = await identityIdStore.loadIdentityId();
+	if (!forceNewIdentityId) {
+		// will return null only if there is no identityId cached or if there is an error retrieving it
+		const identityId: Identity | null = await identityIdStore.loadIdentityId();
 
-	if (identityId) {
-		return identityId.id;
+		if (identityId) {
+			return identityId.id;
+		}
 	}
 	const logins = tokens?.idToken
 		? formLoginsMap(tokens.idToken.toString())

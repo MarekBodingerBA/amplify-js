@@ -83,7 +83,20 @@ export class CognitoAWSCredentialsAndIdentityIdProvider
 			this.clearCredentials();
 		}
 		if (!isAuthenticated) {
-			return this.getGuestCredentials(identityId, authConfig.Cognito);
+			try {
+			  const result = await this.getGuestCredentials(identityId, authConfig.Cognito);
+				return result
+			} catch (e) {
+				// Probably error type needs to be asserted
+				const newIdentityId = await cognitoIdentityIdProvider({
+					tokens,
+					authConfig: authConfig.Cognito,
+					identityIdStore: this._identityIdStore,
+					forceNewIdentityId: true
+				})
+				return this.getGuestCredentials(newIdentityId, authConfig.Cognito);
+			}
+
 		} else {
 			assertIdTokenInAuthTokens(tokens);
 
